@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mazer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div id="app">
+
+    <!-- Layar menu utama -->
+    <div id="screen-menu">
+      <h1>MAZER</h1>
+      <!-- <p>find a way out</p> -->
+      <button id="btn-start">MULAI</button>
+    </div>
+
+    <!-- Layar game -->
+    <div id="screen-game" class="hidden">
+      <div id="hud">
+        <span id="hud-level">Level 1</span>
+        <span id="hud-lives">♥ ♥ ♥</span>
+        <span id="hud-timer">0:00</span>
+      </div>
+      <canvas id="gameCanvas"></canvas>
+      <div id="mobile-controls">
+        <div class="ctrl-row">
+          <button class="ctrl-btn" id="ctrl-up">↑</button>
+        </div>
+        <div class="ctrl-row">
+          <button class="ctrl-btn" id="ctrl-left">←</button>
+          <button class="ctrl-btn" id="ctrl-down">↓</button>
+          <button class="ctrl-btn" id="ctrl-right">→</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay jumpscare -->
+    <div id="screen-jumpscare" class="hidden">
+      <img id="jumpscare-img" src="" alt="" />
+    </div>
+
+    <!-- Layar game over -->
+    <div id="screen-gameover" class="hidden">
+      <h2>KAMU MATI</h2>
+      <p id="gameover-msg"></p>
+      <button id="btn-retry">COBA LAGI</button>
+      <button id="btn-menu">MENU</button>
+    </div>
+
+    <!-- Layar menang -->
+    <div id="screen-win" class="hidden">
+      <h2>KAMU SELAMAT!</h2>
+      <p id="win-msg"></p>
+      <button id="btn-next">LEVEL BERIKUTNYA</button>
+      <button id="btn-menu-win">MENU</button>
+    </div>
+
+  </div>
+
+  <!-- Load semua JS di akhir -->
+  <script src="levels/level1.js"></script>
+  <script src="src/maze.js"></script>
+  <script src="src/lighting.js"></script>
+  <script src="src/player.js"></script>
+  <script src="src/enemy.js"></script>
+  <script src="src/jumpscare.js"></script>
+  <script src="src/ui.js"></script>
+  <script src="src/game.js"></script>
+
+</body>
+</html>
