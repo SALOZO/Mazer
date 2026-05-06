@@ -17,9 +17,10 @@ const Game = {
     this.canvas.height = map.length    * cellSize;
 
     Keys.init();
+    Audio.init();
     UI.init(this);
 
-    // Jangan startLevel di sini — tunggu tombol MULAI ditekan
+    //tunggu tombol MULAI ditekan
     this.state = 'menu';
     requestAnimationFrame(() => this.loop());
   },
@@ -35,6 +36,7 @@ const Game = {
     EnemyManager.init(level.map);
     UI.updateLives(this.lives);
     UI.updateLevel(level.id);
+    // Audio.play('background');
   },
 
   respawn() {
@@ -87,12 +89,15 @@ const Game = {
     this.state = 'jumpscare';
     this.lives--;
     UI.updateLives(this.lives);
+    // Audio.stop('background');
+    Audio.play('jumpscare'); 
     Jumpscare.show(reason, () => {
       if (this.lives <= 0) {
         this.state = 'gameover';
         UI.showGameOver(reason);
       } else {
         this.respawn();
+        // Audio.play('background');
       }
     });
   },

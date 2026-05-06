@@ -81,9 +81,55 @@ button:hover {
   padding: 0 4px;
 }
 
+#btn-mute {
+  padding: 2px 8px;
+  font-size: 14px;
+  border-color: #333;
+  color: #888;
+}
+
 #gameCanvas {
   display: block;
   border: 1px solid #222;
+}
+
+/* === SPLASH === */
+#screen-splash {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 999;
+}
+
+#splash-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  animation: pulse 2s infinite;
+}
+
+#screen-splash h1 {
+  font-size: 52px;
+  color: #f00;
+  letter-spacing: 10px;
+  text-shadow: 0 0 30px #f00, 0 0 60px #900;
+}
+
+#splash-sub {
+  font-size: 14px;
+  color: gray;
+  letter-spacing: 4px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
 }
 
 /* === MOBILE CONTROLS === */

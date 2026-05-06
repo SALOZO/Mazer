@@ -5,6 +5,12 @@ const UI = {
     this.game = gameRef;
     Jumpscare.init();
 
+    document.getElementById('screen-splash').onclick = () => {
+      document.getElementById('screen-splash').classList.add('hidden');
+      document.getElementById('screen-menu').classList.remove('hidden');
+      Audio.play('menu');
+    };
+
     document.getElementById('btn-start').onclick  = () => this.startGame();
     document.getElementById('btn-retry').onclick  = () => this.retry();
     document.getElementById('btn-menu').onclick   = () => this.goMenu();
@@ -26,6 +32,7 @@ const UI = {
   },
 
   startGame() {
+    Audio.stop('menu'); 
     this.showScreen('screen-game');
     this.game.startLevel(LEVEL_1);
   },
@@ -36,8 +43,10 @@ const UI = {
   },
 
   goMenu() {
+    Audio.stop('background');
     this.showScreen('screen-menu');
     this.game.state = 'menu';
+    Audio.play('menu');
   },
 
   updateLives(lives) {

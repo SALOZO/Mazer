@@ -30,6 +30,7 @@ const EnemyManager = {
       if (Maze.isWalkable(nx, ny)) {
         e.x = nx;
         e.y = ny;
+        Audio.play('footstep');
       } else {
         // Kalau nabrak, ganti arah random
         const dirs = [{dx:1,dy:0},{dx:-1,dy:0},{dx:0,dy:1},{dx:0,dy:-1}];
