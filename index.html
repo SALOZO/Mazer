@@ -13,7 +13,7 @@
     <div id="screen-splash">
       <div id="splash-content">
         <h1>...</h1>
-        <p id="splash-sub">[ klik untuk masuk ]</p>
+        <p id="splash-sub">[ Press to Play ]</p>
       </div>
     </div>
 
@@ -21,7 +21,24 @@
     <div id="screen-menu">
       <h1>MAZER</h1>
       <!-- <p>find a way out</p> -->
-      <button id="btn-start">MULAI</button>
+      <button id="btn-start">START</button>
+    </div>
+
+    <!-- Layar pilih level -->
+    <div id="screen-levels" class="hidden">
+      <h2>SELECT LEVEL</h2>
+      <div id="level-grid">
+        <div class="level-card" id="level-card-1">
+          <span class="level-num">1</span>
+        </div>
+        <div class="level-card locked">
+          <span class="level-num">2</span>
+        </div>
+        <div class="level-card locked">
+          <span class="level-num">3</span>
+        </div>
+      </div>
+      <button id="btn-back">← BACK</button>
     </div>
 
     <!-- Layar game -->
@@ -52,17 +69,17 @@
 
     <!-- Layar game over -->
     <div id="screen-gameover" class="hidden">
-      <h2>KAMU MATI</h2>
+      <h2>GAME OVER</h2>
       <p id="gameover-msg"></p>
-      <button id="btn-retry">COBA LAGI</button>
+      <button id="btn-retry">TRY AGAIN</button>
       <button id="btn-menu">MENU</button>
     </div>
 
     <!-- Layar menang -->
     <div id="screen-win" class="hidden">
-      <h2>KAMU SELAMAT!</h2>
+      <h2>YOU WIN!</h2>
       <p id="win-msg"></p>
-      <button id="btn-next">LEVEL BERIKUTNYA</button>
+      <button id="btn-next">NEXT LEVEL</button>
       <button id="btn-menu-win">MENU</button>
     </div>
 

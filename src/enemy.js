@@ -26,11 +26,23 @@ const EnemyManager = {
       const nx = e.x + e.dx;
       const ny = e.y + e.dy;
 
-      // Coba lurus dulu
       if (Maze.isWalkable(nx, ny)) {
         e.x = nx;
         e.y = ny;
-        Audio.play('footstep');
+
+        // Hitung jarak musuh ke player
+        const dx   = e.x - Player.x;
+        const dy   = e.y - Player.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        // Jarak maksimal suara terdengar (dalam satuan tile)
+        const maxDist = 6;
+
+        if (dist <= maxDist) {
+          // Makin dekat makin keras, makin jauh makin pelan
+          const volume = Math.pow(1 - dist / maxDist, 2) * 0.8;
+          Audio.playWithVolume('footstep', volume);
+        }
       } else {
         // Kalau nabrak, ganti arah random
         const dirs = [{dx:1,dy:0},{dx:-1,dy:0},{dx:0,dy:1},{dx:0,dy:-1}];

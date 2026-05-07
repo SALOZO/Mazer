@@ -11,7 +11,23 @@ const UI = {
       Audio.play('menu');
     };
 
-    document.getElementById('btn-start').onclick  = () => this.startGame();
+    document.getElementById('btn-start').onclick = () => {
+      this.showScreen('screen-levels');  // ← ke pilih level, bukan langsung game
+      // Musik menu tetap jalan, tidak dihentikan
+    };
+    // Pilih level → kembali ke menu
+    document.getElementById('btn-back').onclick = () => {
+      this.showScreen('screen-menu');
+    };
+
+    // Klik level 1
+    document.getElementById('level-card-1').onclick = () => {
+      Audio.stop('menu');         // ← baru stop musik di sini
+      this.showScreen('screen-game');
+      this.game.startLevel(LEVEL_1);
+    };
+
+    // document.getElementById('btn-start').onclick  = () => this.startGame();
     document.getElementById('btn-retry').onclick  = () => this.retry();
     document.getElementById('btn-menu').onclick   = () => this.goMenu();
     document.getElementById('btn-next').onclick   = () => this.retry();
@@ -25,7 +41,7 @@ const UI = {
   },
 
   showScreen(id) {
-    ['screen-menu','screen-game','screen-gameover','screen-win'].forEach(s => {
+    ['screen-menu','screen-game','screen-gameover','screen-win','screen-levels'].forEach(s => {
       document.getElementById(s).classList.add('hidden');
     });
     document.getElementById(id).classList.remove('hidden');
@@ -42,11 +58,15 @@ const UI = {
     this.game.startLevel(this.game.currentLevel);
   },
 
+  goLevelSelect() {
+    this.showScreen('screen-levels');
+    if (!Audio.muted) Audio.play('menu');
+  },
+
   goMenu() {
-    Audio.stop('background');
     this.showScreen('screen-menu');
     this.game.state = 'menu';
-    Audio.play('menu');
+    if (!Audio.muted) Audio.play('menu');
   },
 
   updateLives(lives) {

@@ -23,7 +23,7 @@ const Audio = {
       }
 
       if (key === 'jumpscare') {
-        audio.volume = 3.0;    
+        audio.volume = 0.8;    
       }
 
       this.sounds[key] = audio;
@@ -46,6 +46,15 @@ const Audio = {
     if (!sound) return;
     sound.pause();
     sound.currentTime = 0;
+  },
+
+  playWithVolume(key, volume) {
+    if (this.muted) return;
+    const sound = this.sounds[key];
+    if (!sound) return;
+    sound.volume      = Math.max(0, Math.min(1, volume));
+    sound.currentTime = 0;
+    sound.play().catch(() => {});
   },
 
   // Pause background tanpa reset posisi

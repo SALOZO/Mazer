@@ -90,6 +90,7 @@ const Game = {
     this.lives--;
     UI.updateLives(this.lives);
     // Audio.stop('background');
+    Audio.stop('footstep');
     Audio.play('jumpscare'); 
     Jumpscare.show(reason, () => {
       if (this.lives <= 0) {
