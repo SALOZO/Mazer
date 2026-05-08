@@ -31,14 +31,21 @@ const Game = {
     this.state        = 'playing';
     this.tick         = 0;
 
+    // Update ukuran canvas sesuai level baru
+    const { map, cellSize } = level;
+    this.canvas.width  = map[0].length * cellSize;
+    this.canvas.height = map.length * cellSize;
+
+    // Update lebar HUD sesuai canvas
+    document.getElementById('hud').style.width = this.canvas.width + 'px';
+
     Maze.load(level);
     Player.init(level.playerStart.x, level.playerStart.y);
     EnemyManager.init(level.map);
     UI.updateLives(this.lives);
     UI.updateLevel(level.id);
-    // Audio.play('background');
   },
-
+  
   respawn() {
     const level = this.currentLevel;
     Player.init(level.playerStart.x, level.playerStart.y);
@@ -66,6 +73,7 @@ const Game = {
 
         if (tile === TILE.EXIT_REAL) {
           this.state = 'win';
+          Progress.unlockNext(this.currentLevel.id);
           UI.showWin(this.tick);
           return;
         }

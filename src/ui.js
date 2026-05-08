@@ -12,7 +12,7 @@ const UI = {
     };
 
     document.getElementById('btn-start').onclick = () => {
-      this.showScreen('screen-levels');  // ← ke pilih level, bukan langsung game
+      this.goLevelSelect();  // ← ke pilih level, bukan langsung game
       // Musik menu tetap jalan, tidak dihentikan
     };
     // Pilih level → kembali ke menu
@@ -22,15 +22,23 @@ const UI = {
 
     // Klik level 1
     document.getElementById('level-card-1').onclick = () => {
-      Audio.stop('menu');         // ← baru stop musik di sini
+      if (!Progress.isUnlocked(1)) return;
+      Audio.stop('menu');
       this.showScreen('screen-game');
-      this.game.startLevel(LEVEL_1);
+      this.game.startLevel(Progress.getLevel(1));
+    };
+
+    document.getElementById('level-card-2').onclick = () => {
+      if (!Progress.isUnlocked(2)) return;
+      Audio.stop('menu');
+      this.showScreen('screen-game');
+      this.game.startLevel(Progress.getLevel(2));
     };
 
     // document.getElementById('btn-start').onclick  = () => this.startGame();
     document.getElementById('btn-retry').onclick  = () => this.retry();
     document.getElementById('btn-menu').onclick   = () => this.goMenu();
-    document.getElementById('btn-next').onclick   = () => this.retry();
+    document.getElementById('btn-next').onclick   = () => this.goLevelSelect();
     document.getElementById('btn-menu-win').onclick = () => this.goMenu();
 
     // Tombol mobile
@@ -59,8 +67,25 @@ const UI = {
   },
 
   goLevelSelect() {
+    this.refreshLevelCards(); 
     this.showScreen('screen-levels');
     if (!Audio.muted) Audio.play('menu');
+  },
+
+  refreshLevelCards() {
+    [1, 2].forEach(id => {
+      const card   = document.getElementById(`level-card-${id}`);
+      const status = document.getElementById(`level-status-${id}`);
+      if (!card) return;
+
+      if (Progress.isUnlocked(id)) {
+        card.classList.remove('locked');
+        if (status) status.textContent = 'TERSEDIA';
+      } else {
+        card.classList.add('locked');
+        if (status) status.textContent = 'TERKUNCI';
+      }
+    });
   },
 
   goMenu() {
