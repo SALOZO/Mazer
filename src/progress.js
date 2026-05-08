@@ -1,6 +1,6 @@
 const Progress = {
   // Untuk tambah level baru
-  LEVELS: [LEVEL_1, LEVEL_2],
+  LEVELS: [LEVEL_1, LEVEL_2, LEVEL_3],
 
   // Ambil progress dari localStorage
   load() {

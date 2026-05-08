@@ -35,6 +35,13 @@ const UI = {
       this.game.startLevel(Progress.getLevel(2));
     };
 
+    document.getElementById('level-card-3').onclick = () => {
+      if (!Progress.isUnlocked(3)) return;
+      Audio.stop('menu');
+      this.showScreen('screen-game');
+      this.game.startLevel(Progress.getLevel(3));
+    };
+
     // document.getElementById('btn-start').onclick  = () => this.startGame();
     document.getElementById('btn-retry').onclick  = () => this.retry();
     document.getElementById('btn-menu').onclick   = () => this.goMenu();
@@ -73,7 +80,7 @@ const UI = {
   },
 
   refreshLevelCards() {
-    [1, 2].forEach(id => {
+    [1, 2, 3].forEach(id => {
       const card   = document.getElementById(`level-card-${id}`);
       const status = document.getElementById(`level-status-${id}`);
       if (!card) return;

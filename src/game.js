@@ -26,32 +26,42 @@ const Game = {
   },
 
   startLevel(level) {
-    this.currentLevel = level;
-    this.lives        = level.lives;
-    this.state        = 'playing';
-    this.tick         = 0;
+      this.currentLevel = level;
+      this.lives        = level.lives;
+      this.state        = 'playing';
+      this.tick         = 0;
 
-    // Update ukuran canvas sesuai level baru
-    const { map, cellSize } = level;
-    this.canvas.width  = map[0].length * cellSize;
-    this.canvas.height = map.length * cellSize;
+      const { map, cellSize } = level;
 
-    // Update lebar HUD sesuai canvas
-    document.getElementById('hud').style.width = this.canvas.width + 'px';
+      const maxW = window.innerWidth  - 32;
+      const maxH = window.innerHeight - 140;
 
-    Maze.load(level);
-    Player.init(level.playerStart.x, level.playerStart.y);
-    EnemyManager.init(level.map);
-    UI.updateLives(this.lives);
-    UI.updateLevel(level.id);
-  },
-  
-  respawn() {
-    const level = this.currentLevel;
-    Player.init(level.playerStart.x, level.playerStart.y);
-    EnemyManager.init(level.map);
-    this.state = 'playing';
-  },
+      const mapW = map[0].length * cellSize;
+      const mapH = map.length    * cellSize;
+
+      // Scale down kalau map lebih besar dari layar
+      const scale = Math.min(1, maxW / mapW, maxH / mapH);
+
+      const finalW = Math.floor(mapW * scale);
+      const finalH = Math.floor(mapH * scale);
+
+      this.canvas.width  = finalW;
+      this.canvas.height = finalH;
+      this.canvas.style.width  = finalW + 'px';
+      this.canvas.style.height = finalH + 'px';
+
+      // Simpan scale untuk dipakai saat render
+      this.scale = scale;
+
+      // Update lebar HUD sesuai canvas
+      document.getElementById('hud').style.width = finalW + 'px';
+
+      Maze.load(level);
+      Player.init(level.playerStart.x, level.playerStart.y);
+      EnemyManager.init(level.map);
+      UI.updateLives(this.lives);
+      UI.updateLevel(level.id);
+    },
 
   loop() {
     if (this.state === 'playing') {
@@ -112,23 +122,31 @@ const Game = {
   },
 
   render() {
-    const { ctx, canvas, currentLevel } = this;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const { ctx, canvas, currentLevel } = this;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    if (this.state === 'playing' || this.state === 'jumpscare') {
-      const brightness = Lighting.compute(
-        Player.x, Player.y,
-        currentLevel.map,
-        currentLevel.lightRadius
-      );
-      Maze.render(ctx, brightness);
-      EnemyManager.render(ctx, currentLevel.cellSize, brightness);
-      Player.render(ctx, currentLevel.cellSize);
-      Lighting.renderVignette(ctx, canvas.width, canvas.height);
-    }
-  },
+      if (this.state === 'playing' || this.state === 'jumpscare') {
+        const brightness = Lighting.compute(
+          Player.x, Player.y,
+          currentLevel.map,
+          currentLevel.lightRadius
+        );
+
+        // Terapkan scale supaya semua tile menyesuaikan ukuran canvas
+        ctx.save();
+        ctx.scale(this.scale, this.scale);
+
+        Maze.render(ctx, brightness);
+        EnemyManager.render(ctx, currentLevel.cellSize, brightness);
+        Player.render(ctx, currentLevel.cellSize);
+
+        ctx.restore();
+
+        Lighting.renderVignette(ctx, canvas.width, canvas.height);
+      }
+    },
 
   handleMobileDir(dx, dy) {
     if (this.state !== 'playing') return;
