@@ -20,6 +20,23 @@ const UI = {
       this.showScreen('screen-menu');
     };
 
+        // Tombol info
+    document.getElementById('btn-info').onclick = () => {
+      document.getElementById('popup-info').classList.remove('hidden');
+    };
+
+    // Tutup popup
+    document.getElementById('popup-close').onclick = () => {
+      document.getElementById('popup-info').classList.add('hidden');
+    };
+
+    // Klik di luar popup juga menutup
+    document.getElementById('popup-info').onclick = (e) => {
+      if (e.target.id === 'popup-info') {
+        document.getElementById('popup-info').classList.add('hidden');
+      }
+    };
+
     // Klik level 1
     document.getElementById('level-card-1').onclick = () => {
       if (!Progress.isUnlocked(1)) return;
@@ -60,6 +77,13 @@ const UI = {
       document.getElementById(s).classList.add('hidden');
     });
     document.getElementById(id).classList.remove('hidden');
+
+    const btnInfo = document.getElementById('btn-info');
+      if (id === 'screen-game') {
+        btnInfo.classList.add('hidden');
+      } else {
+        btnInfo.classList.remove('hidden');
+      }
   },
 
   startGame() {

@@ -102,6 +102,15 @@ const Game = {
       this.triggerJumpscare('Kamu tertangkap!');
     }
   },
+  
+  respawn() {
+    const level = this.currentLevel;
+    this.state  = 'playing';
+    this.tick   = 0;
+    Maze.load(level);
+    Player.init(level.playerStart.x, level.playerStart.y);
+    EnemyManager.init(level.map);
+  },
 
   triggerJumpscare(reason) {
     this.state = 'jumpscare';
@@ -120,6 +129,7 @@ const Game = {
       }
     });
   },
+
 
   render() {
       const { ctx, canvas, currentLevel } = this;
