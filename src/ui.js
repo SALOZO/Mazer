@@ -7,13 +7,18 @@ const UI = {
 
     document.getElementById('screen-splash').onclick = () => {
       document.getElementById('screen-splash').classList.add('hidden');
+      document.getElementById('popup-tutorial').classList.remove('hidden');
       document.getElementById('screen-menu').classList.remove('hidden');
       Audio.play('menu');
     };
 
+    document.getElementById('btn-tutorial-close').onclick = () => {
+      document.getElementById('popup-tutorial').classList.add('hidden');
+      document.getElementById('screen-menu').classList.remove('hidden');
+    };
+
     document.getElementById('btn-start').onclick = () => {
-      this.goLevelSelect();  // ← ke pilih level, bukan langsung game
-      // Musik menu tetap jalan, tidak dihentikan
+      this.goLevelSelect();
     };
     // Pilih level → kembali ke menu
     document.getElementById('btn-back').onclick = () => {
@@ -61,7 +66,7 @@ const UI = {
 
     // document.getElementById('btn-start').onclick  = () => this.startGame();
     document.getElementById('btn-retry').onclick  = () => this.retry();
-    document.getElementById('btn-menu').onclick   = () => this.goMenu();
+    // document.getElementById('btn-menu').onclick   = () => this.goMenu();
     document.getElementById('btn-next').onclick   = () => this.goLevelSelect();
     document.getElementById('btn-menu-win').onclick = () => this.goMenu();
 
