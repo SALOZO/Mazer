@@ -544,3 +544,23 @@ button:hover {
     display: flex;
   }
 }
+
+/* === EYE FLASH === */
+#eye-flash {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 90;
+  pointer-events: none; 
+  background: transparent;
+}
+
+#eye-img {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.05s ease;
+}

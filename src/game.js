@@ -10,6 +10,8 @@ const Game = {
   scale: 1,
   timeLeft: 0,      // ← detik tersisa
   lastSecondTick: 0, // ← untuk hitung detik
+  eyeShown: false,  
+  eyeTimer: null, 
 
   init() {
     this.canvas = document.getElementById('gameCanvas');
@@ -59,6 +61,9 @@ const Game = {
     UI.updateLives(this.lives);
     UI.updateLevel(level.id);
     UI.updateTimer(this.timeLeft);
+
+    this.eyeShown = false;
+    if (this.eyeTimer) clearTimeout(this.eyeTimer);
   },
 
   respawn() {
@@ -84,6 +89,10 @@ const Game = {
   update() {
     // Hitung mundur timer — kurangi 1 detik setiap 60 tick
     this.lastSecondTick++;
+    if (!this.eyeShown && this.currentLevel.timeLimit - this.timeLeft >= 10) {
+      this.eyeShown = true;
+      this.showEyeFlash();
+    }
     if (this.lastSecondTick >= 60) {
       this.lastSecondTick = 0;
       this.timeLeft--;
@@ -142,6 +151,22 @@ const Game = {
         self.respawn();
       }
     });
+  },
+
+  showEyeFlash() {
+    const el  = document.getElementById('eye-flash');
+    const img = document.getElementById('eye-img');
+
+    // Muncul
+    el.classList.remove('hidden');
+    img.style.opacity = '1';
+
+    this.eyeTimer = setTimeout(() => {
+      img.style.opacity = '0';
+      setTimeout(() => {
+        el.classList.add('hidden');
+      }, 100);
+    }, 450);
   },
 
   render() {

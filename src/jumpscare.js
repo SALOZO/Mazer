@@ -4,7 +4,10 @@ const Jumpscare = {
 
   // Gambar placeholder jumpscare (nanti bisa diganti gambar asli)
   images: [
-    'assets/images/hoo.jpg'
+    'assets/images/hoo.jpg',
+    'assets/images/hoo2.jpg',
+    'assets/images/hoo3.jpg'
+
   ],
 
   init() {
