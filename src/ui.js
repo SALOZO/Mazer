@@ -66,7 +66,7 @@ const UI = {
 
     // document.getElementById('btn-start').onclick  = () => this.startGame();
     document.getElementById('btn-retry').onclick  = () => this.retry();
-    // document.getElementById('btn-menu').onclick   = () => this.goMenu();
+    document.getElementById('btn-menu').onclick   = () => this.goMenu();
     document.getElementById('btn-next').onclick   = () => this.goLevelSelect();
     document.getElementById('btn-menu-win').onclick = () => this.goMenu();
 
@@ -105,7 +105,7 @@ const UI = {
   goLevelSelect() {
     this.refreshLevelCards(); 
     this.showScreen('screen-levels');
-    // if (!Audio.muted) Audio.play('menu');
+    if (!Audio.muted) Audio.play('menu');
   },
 
   refreshLevelCards() {
@@ -171,6 +171,7 @@ const UI = {
   // },
 
   showWin(detikDipakai) {
+    Audio.stop('footstep');
     this.showScreen('screen-win');
     document.getElementById('win-msg').textContent = `Waktu: ${detikDipakai} detik`;
   },

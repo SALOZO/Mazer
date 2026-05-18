@@ -8,6 +8,10 @@ const Jumpscare = {
     'assets/images/hoo2.png',
     'assets/images/hoo3.png'
 
+    // 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="%23000"/><text x="200" y="180" font-size="120" text-anchor="middle" fill="%23f00">👻</text><text x="200" y="280" font-size="48" text-anchor="middle" fill="%23fff" font-family="monospace">BOO!</text></svg>',
+    // 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="%23000"/><text x="200" y="180" font-size="120" text-anchor="middle" fill="%23f00">💀</text><text x="200" y="280" font-size="48" text-anchor="middle" fill="%23fff" font-family="monospace">MATI!</text></svg>',
+    // 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="%23000"/><text x="200" y="180" font-size="120" text-anchor="middle" fill="%23f00">😱</text><text x="200" y="280" font-size="48" text-anchor="middle" fill="%23fff" font-family="monospace">AHHH!</text></svg>',
+
   ],
 
   init() {
