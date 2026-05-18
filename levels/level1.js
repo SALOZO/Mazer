@@ -18,6 +18,7 @@ const LEVEL_1 = {
 playerStart: { x: 1, y: 1 },
 lives: 3,
 lightRadius: 1,
+timeLimit: 35, // dalam detik
 };
 
 //penjelasannya:

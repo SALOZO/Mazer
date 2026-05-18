@@ -25,5 +25,6 @@ const LEVEL_3 = {
 playerStart: { x: 1, y: 1 },
 lives: 3,
 lightRadius: 1,
+timeLimit: 65,
 };
 // 0=lantai, 1=dinding, 2=EXIT asli, 3=EXIT jebakan, 4=spawn musuh

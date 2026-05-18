@@ -534,3 +534,13 @@ button:hover {
   background: #f00;
   color: #000;
 }
+
+#mobile-controls {
+  display: none;
+}
+
+@media (max-width: 768px), (pointer: coarse) {
+  #mobile-controls {
+    display: flex;
+  }
+}

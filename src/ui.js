@@ -105,7 +105,7 @@ const UI = {
   goLevelSelect() {
     this.refreshLevelCards(); 
     this.showScreen('screen-levels');
-    if (!Audio.muted) Audio.play('menu');
+    // if (!Audio.muted) Audio.play('menu');
   },
 
   refreshLevelCards() {
@@ -139,14 +139,39 @@ const UI = {
     document.getElementById('hud-level').textContent = `Level ${id}`;
   },
 
+  updateTimer(seconds) {
+    const menit = Math.floor(seconds / 60);
+    const detik = seconds % 60;
+    const str   = `${menit}:${detik.toString().padStart(2, '0')}`;
+    const el    = document.getElementById('hud-timer');
+    el.textContent = str;
+
+    // Warna merah berkedip kalau sisa waktu kurang dari 15 detik
+    if (seconds <= 15) {
+      el.style.color = '#f00';
+      el.style.animation = 'pulse 0.5s infinite';
+    } else if (seconds <= 30) {
+      el.style.color = '#fa4';
+      el.style.animation = 'none';
+    } else {
+      el.style.color = '#aaa';
+      el.style.animation = 'none';
+    }
+  },
+
   showGameOver(reason) {
     this.showScreen('screen-gameover');
     document.getElementById('gameover-msg').textContent = reason;
   },
 
-  showWin(ticks) {
+  // showWin(ticks) {
+  //   this.showScreen('screen-win');
+  //   const detik = Math.floor(ticks / 60);
+  //   document.getElementById('win-msg').textContent = `Waktu: ${detik} detik`;
+  // },
+
+  showWin(detikDipakai) {
     this.showScreen('screen-win');
-    const detik = Math.floor(ticks / 60);
-    document.getElementById('win-msg').textContent = `Waktu: ${detik} detik`;
+    document.getElementById('win-msg').textContent = `Waktu: ${detikDipakai} detik`;
   },
 };

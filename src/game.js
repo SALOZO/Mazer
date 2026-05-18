@@ -1,12 +1,15 @@
 const Game = {
   canvas: null,
   ctx: null,
-  state: 'menu',    // menu | playing | jumpscare | gameover | win
+  state: 'menu',
   lives: 3,
   currentLevel: LEVEL_1,
   tick: 0,
   moveTimer: 0,
-  moveDelay: 8,     // tick jeda antar gerak (anti-spam)
+  moveDelay: 8,
+  scale: 1,
+  timeLeft: 0,      // ← detik tersisa
+  lastSecondTick: 0, // ← untuk hitung detik
 
   init() {
     this.canvas = document.getElementById('gameCanvas');
@@ -14,54 +17,60 @@ const Game = {
 
     const { map, cellSize } = this.currentLevel;
     this.canvas.width  = map[0].length * cellSize;
-    this.canvas.height = map.length    * cellSize;
+    this.canvas.height = map.length * cellSize;
 
     Keys.init();
     Audio.init();
     UI.init(this);
 
-    //tunggu tombol MULAI ditekan
     this.state = 'menu';
     requestAnimationFrame(() => this.loop());
   },
 
   startLevel(level) {
-      this.currentLevel = level;
-      this.lives        = level.lives;
-      this.state        = 'playing';
-      this.tick         = 0;
+    this.currentLevel = level;
+    this.lives        = level.lives;
+    this.state        = 'playing';
+    this.tick         = 0;
+    this.moveTimer    = 0;
+    this.timeLeft     = level.timeLimit ?? 120;
+    this.lastSecondTick = 0;
 
-      const { map, cellSize } = level;
+    const { map, cellSize } = level;
+    const maxW = window.innerWidth  - 32;
+    const maxH = window.innerHeight - 140;
+    const mapW = map[0].length * cellSize;
+    const mapH = map.length    * cellSize;
+    const scale = Math.min(1, maxW / mapW, maxH / mapH);
+    const finalW = Math.floor(mapW * scale);
+    const finalH = Math.floor(mapH * scale);
 
-      const maxW = window.innerWidth  - 32;
-      const maxH = window.innerHeight - 140;
+    this.canvas.width  = finalW;
+    this.canvas.height = finalH;
+    this.canvas.style.width  = finalW + 'px';
+    this.canvas.style.height = finalH + 'px';
+    this.scale = scale;
 
-      const mapW = map[0].length * cellSize;
-      const mapH = map.length    * cellSize;
+    document.getElementById('hud').style.width = finalW + 'px';
 
-      // Scale down kalau map lebih besar dari layar
-      const scale = Math.min(1, maxW / mapW, maxH / mapH);
+    Maze.load(level);
+    Player.init(level.playerStart.x, level.playerStart.y);
+    EnemyManager.init(level.map);
+    UI.updateLives(this.lives);
+    UI.updateLevel(level.id);
+    UI.updateTimer(this.timeLeft);
+  },
 
-      const finalW = Math.floor(mapW * scale);
-      const finalH = Math.floor(mapH * scale);
-
-      this.canvas.width  = finalW;
-      this.canvas.height = finalH;
-      this.canvas.style.width  = finalW + 'px';
-      this.canvas.style.height = finalH + 'px';
-
-      // Simpan scale untuk dipakai saat render
-      this.scale = scale;
-
-      // Update lebar HUD sesuai canvas
-      document.getElementById('hud').style.width = finalW + 'px';
-
-      Maze.load(level);
-      Player.init(level.playerStart.x, level.playerStart.y);
-      EnemyManager.init(level.map);
-      UI.updateLives(this.lives);
-      UI.updateLevel(level.id);
-    },
+  respawn() {
+    const level = this.currentLevel;
+    this.state  = 'playing';
+    this.tick   = 0;
+    this.lastSecondTick = 0;
+    // Timer TIDAK direset saat respawn — terus hitung mundur
+    Maze.load(level);
+    Player.init(level.playerStart.x, level.playerStart.y);
+    EnemyManager.init(level.map);
+  },
 
   loop() {
     if (this.state === 'playing') {
@@ -73,7 +82,23 @@ const Game = {
   },
 
   update() {
-    // Gerak player dengan jeda
+    // Hitung mundur timer — kurangi 1 detik setiap 60 tick
+    this.lastSecondTick++;
+    if (this.lastSecondTick >= 60) {
+      this.lastSecondTick = 0;
+      this.timeLeft--;
+      UI.updateTimer(this.timeLeft);
+
+      // Waktu habis → jumpscare lalu game over
+      if (this.timeLeft <= 0) {
+        this.timeLeft = 0;
+        this.lives = 0; // paksa lives 0 supaya langsung game over
+        this.triggerJumpscare('Waktu habis!');
+        return;
+      }
+    }
+
+    // Gerak player
     this.moveTimer++;
     if (this.moveTimer >= this.moveDelay) {
       const dir = Keys.getDirection();
@@ -84,7 +109,7 @@ const Game = {
         if (tile === TILE.EXIT_REAL) {
           this.state = 'win';
           Progress.unlockNext(this.currentLevel.id);
-          UI.showWin(this.tick);
+          UI.showWin(this.currentLevel.timeLimit - this.timeLeft);
           return;
         }
         if (tile === TILE.EXIT_FAKE) {
@@ -94,82 +119,68 @@ const Game = {
       }
     }
 
-    // Update musuh
     EnemyManager.update();
 
-    // Cek tabrakan musuh & player
     if (EnemyManager.checkCollision(Player.x, Player.y)) {
       this.triggerJumpscare('Kamu tertangkap!');
     }
   },
-  
-  respawn() {
-    const level = this.currentLevel;
-    this.state  = 'playing';
-    this.tick   = 0;
-    Maze.load(level);
-    Player.init(level.playerStart.x, level.playerStart.y);
-    EnemyManager.init(level.map);
-  },
 
   triggerJumpscare(reason) {
+    if (this.state === 'jumpscare') return; // cegah double trigger
     this.state = 'jumpscare';
     this.lives--;
     UI.updateLives(this.lives);
-    // Audio.stop('background');
     Audio.stop('footstep');
-    Audio.play('jumpscare'); 
+    Audio.play('jumpscare');
+    const self = this;
     Jumpscare.show(reason, () => {
-      if (this.lives <= 0) {
-        this.state = 'gameover';
+      if (self.lives <= 0) {
+        self.state = 'gameover';
         UI.showGameOver(reason);
       } else {
-        this.respawn();
-        // Audio.play('background');
+        self.respawn();
       }
     });
   },
 
-
   render() {
-      const { ctx, canvas, currentLevel } = this;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#000';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const { ctx, canvas, currentLevel } = this;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      if (this.state === 'playing' || this.state === 'jumpscare') {
-        const brightness = Lighting.compute(
-          Player.x, Player.y,
-          currentLevel.map,
-          currentLevel.lightRadius
-        );
+    if (this.state === 'playing' || this.state === 'jumpscare') {
+      const brightness = Lighting.compute(
+        Player.x, Player.y,
+        currentLevel.map,
+        currentLevel.lightRadius
+      );
 
-        // Terapkan scale supaya semua tile menyesuaikan ukuran canvas
-        ctx.save();
-        ctx.scale(this.scale, this.scale);
+      ctx.save();
+      ctx.scale(this.scale, this.scale);
+      Maze.render(ctx, brightness);
+      EnemyManager.render(ctx, currentLevel.cellSize, brightness);
+      Player.render(ctx, currentLevel.cellSize);
+      ctx.restore();
 
-        Maze.render(ctx, brightness);
-        EnemyManager.render(ctx, currentLevel.cellSize, brightness);
-        Player.render(ctx, currentLevel.cellSize);
-
-        ctx.restore();
-
-        Lighting.renderVignette(ctx, canvas.width, canvas.height);
-      }
-    },
+      Lighting.renderVignette(ctx, canvas.width, canvas.height);
+    }
+  },
 
   handleMobileDir(dx, dy) {
     if (this.state !== 'playing') return;
     const tile = Player.tryMove(dx, dy);
     if (tile === TILE.EXIT_REAL) {
       this.state = 'win';
-      UI.showWin(this.tick);
+      Progress.unlockNext(this.currentLevel.id);
+      UI.showWin(this.currentLevel.timeLimit - this.timeLeft);
     } else if (tile === TILE.EXIT_FAKE) {
       this.triggerJumpscare('Itu bukan jalan keluar!');
     } else if (EnemyManager.checkCollision(Player.x, Player.y)) {
       this.triggerJumpscare('Kamu tertangkap!');
     }
   },
-}
+};
 
 window.addEventListener('load', () => Game.init());
