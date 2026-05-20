@@ -32,6 +32,12 @@ const UI = {
         card.appendChild(statusSpan);
         levelGrid.appendChild(card);
       }
+
+      // Setup active observer
+      this.setupCardObserver(levelGrid);
+      
+      // Setup drag and wheel scrolling
+      this.initLevelGridScroll(levelGrid);
     }
 
     document.getElementById('screen-splash').onclick = () => {
@@ -132,6 +138,7 @@ const UI = {
     this.refreshLevelCards(); 
     this.showScreen('screen-levels');
     if (!Audio.muted) Audio.play('menu');
+    this.scrollToLatestLevel();
   },
 
   refreshLevelCards() {
@@ -158,6 +165,85 @@ const UI = {
         if (status) status.textContent = ''; // Atau dikosongkan/diisi skor
       }
     });
+  },
+
+  setupCardObserver(grid) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        } else {
+          entry.target.classList.remove('active');
+        }
+      });
+    }, {
+      root: grid,
+      threshold: 0.6
+    });
+
+    const cards = grid.querySelectorAll('.level-card');
+    cards.forEach(card => observer.observe(card));
+  },
+
+  initLevelGridScroll(grid) {
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    grid.addEventListener('mousedown', (e) => {
+      isDown = true;
+      grid.classList.add('grabbing');
+      startX = e.pageX - grid.offsetLeft;
+      scrollLeft = grid.scrollLeft;
+    });
+
+    grid.addEventListener('mouseleave', () => {
+      isDown = false;
+      grid.classList.remove('grabbing');
+    });
+
+    grid.addEventListener('mouseup', () => {
+      isDown = false;
+      grid.classList.remove('grabbing');
+    });
+
+    grid.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - grid.offsetLeft;
+      const walk = (x - startX) * 1.5;
+      grid.scrollLeft = scrollLeft - walk;
+    });
+
+    grid.addEventListener('wheel', (e) => {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        grid.scrollLeft += e.deltaY;
+      }
+    }, { passive: false });
+  },
+
+  scrollToLatestLevel() {
+    const levelGrid = document.getElementById('level-grid');
+    if (!levelGrid) return;
+
+    let latestId = 1;
+    for (let i = 1; i <= this.totalLevels; i++) {
+      if (Progress.isUnlocked(i)) {
+        latestId = i;
+      }
+    }
+
+    const targetCard = document.getElementById(`level-card-${latestId}`);
+    if (targetCard) {
+      setTimeout(() => {
+        targetCard.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center'
+        });
+      }, 100);
+    }
   },
 
   goMenu() {
