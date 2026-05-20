@@ -1,10 +1,38 @@
 const UI = {
   game: null,
-  totalLevels: 4,
+  totalLevels: 3,
+  maxLevelsGame: 20,
 
   init(gameRef) {
     this.game = gameRef;
     Jumpscare.init();
+
+    const levelGrid = document.getElementById('level-grid');
+    if (levelGrid) {
+      levelGrid.innerHTML = ''; // Pastikan bersih terlebih dahulu
+      
+      for (let i = 1; i <= this.maxLevelsGame; i++) {
+        // Buat element card
+        const card = document.createElement('div');
+        card.className = 'level-card';
+        card.id = `level-card-${i}`;
+
+        // Buat nomor level
+        const numSpan = document.createElement('span');
+        numSpan.className = 'level-num';
+        numSpan.textContent = i;
+
+        // Buat status level
+        const statusSpan = document.createElement('span');
+        statusSpan.className = 'level-status';
+        statusSpan.id = `level-status-${i}`;
+
+        // Masukkan komponen ke dalam kartu, lalu masukkan kartu ke grid
+        card.appendChild(numSpan);
+        card.appendChild(statusSpan);
+        levelGrid.appendChild(card);
+      }
+    }
 
     document.getElementById('screen-splash').onclick = () => {
       document.getElementById('screen-splash').classList.add('hidden');
@@ -43,22 +71,19 @@ const UI = {
       }
     };
 
-    const levelContainer = document.getElementById('screen-levels'); // Sesuaikan dengan ID container/screen level kamu
-    if (levelContainer) {
-      levelContainer.onclick = (e) => {
-        const card = e.target.closest('[id^="level-card-"]');
+    if (levelGrid) {
+      levelGrid.onclick = (e) => {
+        const card = e.target.closest('.level-card');
         if (!card) return;
 
-        // Ambil angka ID dari string 'level-card-X'
         const id = parseInt(card.id.replace('level-card-', ''), 10);
 
-        // Jika kartu berstatus coming soon atau terkunci, batalkan aksi
+        // Jika level berstatus Coming Soon atau dikunci oleh sistem, abaikan klik
         if (card.classList.contains('coming-soon') || !Progress.isUnlocked(id)) {
           e.preventDefault();
           return;
         }
 
-        // Jalankan level
         Audio.stop('menu');
         this.showScreen('screen-game');
         this.game.startLevel(Progress.getLevel(id));
