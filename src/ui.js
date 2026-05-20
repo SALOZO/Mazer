@@ -1,5 +1,6 @@
 const UI = {
   game: null,
+  totalLevels: 4,
 
   init(gameRef) {
     this.game = gameRef;
@@ -42,27 +43,27 @@ const UI = {
       }
     };
 
-    // Klik level 1
-    document.getElementById('level-card-1').onclick = () => {
-      if (!Progress.isUnlocked(1)) return;
-      Audio.stop('menu');
-      this.showScreen('screen-game');
-      this.game.startLevel(Progress.getLevel(1));
-    };
+    const levelContainer = document.getElementById('screen-levels'); // Sesuaikan dengan ID container/screen level kamu
+    if (levelContainer) {
+      levelContainer.onclick = (e) => {
+        const card = e.target.closest('[id^="level-card-"]');
+        if (!card) return;
 
-    document.getElementById('level-card-2').onclick = () => {
-      if (!Progress.isUnlocked(2)) return;
-      Audio.stop('menu');
-      this.showScreen('screen-game');
-      this.game.startLevel(Progress.getLevel(2));
-    };
+        // Ambil angka ID dari string 'level-card-X'
+        const id = parseInt(card.id.replace('level-card-', ''), 10);
 
-    document.getElementById('level-card-3').onclick = () => {
-      if (!Progress.isUnlocked(3)) return;
-      Audio.stop('menu');
-      this.showScreen('screen-game');
-      this.game.startLevel(Progress.getLevel(3));
-    };
+        // Jika kartu berstatus coming soon atau terkunci, batalkan aksi
+        if (card.classList.contains('coming-soon') || !Progress.isUnlocked(id)) {
+          e.preventDefault();
+          return;
+        }
+
+        // Jalankan level
+        Audio.stop('menu');
+        this.showScreen('screen-game');
+        this.game.startLevel(Progress.getLevel(id));
+      };
+    }
 
     // document.getElementById('btn-start').onclick  = () => this.startGame();
     document.getElementById('btn-retry').onclick  = () => this.retry();
@@ -109,17 +110,27 @@ const UI = {
   },
 
   refreshLevelCards() {
-    [1, 2, 3].forEach(id => {
-      const card   = document.getElementById(`level-card-${id}`);
-      const status = document.getElementById(`level-status-${id}`);
-      if (!card) return;
+    // Ambil semua elemen HTML yang id-nya diawali dengan 'level-card-'
+    const allCards = document.querySelectorAll('[id^="level-card-"]');
 
-      if (Progress.isUnlocked(id)) {
-        card.classList.remove('locked');
-        if (status) status.textContent = 'TERSEDIA';
-      } else {
+    allCards.forEach(card => {
+      const id = parseInt(card.id.replace('level-card-', ''), 10);
+      const status = document.getElementById(`level-status-${id}`);
+      
+      // Reset class bawaan dulu agar tidak menumpuk saat refresh
+      card.classList.remove('locked', 'coming-soon');
+
+      if (id > this.totalLevels) {
+        // Otomatis jadi Coming Soon jika angka id melewati totalLevels yang rilis
+        card.classList.add('locked', 'coming-soon');
+        if (status) status.textContent = 'COMING SOON';
+      } else if (!Progress.isUnlocked(id)) {
+        // Otomatis terkunci jika belum di-unlock di Progress player
         card.classList.add('locked');
         if (status) status.textContent = 'TERKUNCI';
+      } else {
+        // Terbuka dan siap dimainkan
+        if (status) status.textContent = ''; // Atau dikosongkan/diisi skor
       }
     });
   },
