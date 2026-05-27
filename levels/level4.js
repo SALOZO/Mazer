@@ -27,6 +27,6 @@ const LEVEL_4 = {
   ],
   playerStart: { x: 1, y: 1 },
   lives: 3,
-  lightRadius: 1.8,
+  lightRadius: 1,
   timeLimit: 85,
 };

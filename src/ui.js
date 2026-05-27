@@ -1,6 +1,6 @@
 const UI = {
   game: null,
-  totalLevels: 3,
+  totalLevels: 5,
   maxLevelsGame: 20,
 
   init(gameRef) {
@@ -60,6 +60,19 @@ const UI = {
       this.showScreen('screen-menu');
     };
 
+    const prevBtn = document.getElementById('btn-prev-level');
+    const nextBtn = document.getElementById('btn-next-level');
+    if (prevBtn) {
+      prevBtn.onclick = () => {
+        this.navigateLevelGrid('prev');
+      };
+    }
+    if (nextBtn) {
+      nextBtn.onclick = () => {
+        this.navigateLevelGrid('next');
+      };
+    }
+
         // Tombol info
     document.getElementById('btn-info').onclick = () => {
       document.getElementById('popup-info').classList.remove('hidden');
@@ -79,6 +92,10 @@ const UI = {
 
     if (levelGrid) {
       levelGrid.onclick = (e) => {
+        if (this.isDragging) {
+          this.isDragging = false;
+          return;
+        }
         const card = e.target.closest('.level-card');
         if (!card) return;
 
@@ -189,9 +206,11 @@ const UI = {
     let isDown = false;
     let startX;
     let scrollLeft;
+    this.isDragging = false;
 
     grid.addEventListener('mousedown', (e) => {
       isDown = true;
+      this.isDragging = false;
       grid.classList.add('grabbing');
       startX = e.pageX - grid.offsetLeft;
       scrollLeft = grid.scrollLeft;
@@ -203,8 +222,10 @@ const UI = {
     });
 
     grid.addEventListener('mouseup', () => {
-      isDown = false;
-      grid.classList.remove('grabbing');
+      setTimeout(() => {
+        isDown = false;
+        grid.classList.remove('grabbing');
+      }, 0);
     });
 
     grid.addEventListener('mousemove', (e) => {
@@ -212,15 +233,64 @@ const UI = {
       e.preventDefault();
       const x = e.pageX - grid.offsetLeft;
       const walk = (x - startX) * 1.5;
+      if (Math.abs(x - startX) > 5) {
+        this.isDragging = true;
+      }
       grid.scrollLeft = scrollLeft - walk;
     });
 
+    let wheelTimeout = null;
     grid.addEventListener('wheel', (e) => {
-      if (e.deltaY !== 0) {
+      const delta = e.deltaY !== 0 ? e.deltaY : e.deltaX;
+      if (delta !== 0) {
         e.preventDefault();
-        grid.scrollLeft += e.deltaY;
+        if (!wheelTimeout) {
+          const direction = delta > 0 ? 'next' : 'prev';
+          this.navigateLevelGrid(direction);
+          wheelTimeout = setTimeout(() => {
+            wheelTimeout = null;
+          }, 400); // 400ms throttle to match the smooth scroll animation
+        }
       }
     }, { passive: false });
+  },
+
+  navigateLevelGrid(direction) {
+    const grid = document.getElementById('level-grid');
+    if (!grid) return;
+
+    const activeCards = Array.from(grid.querySelectorAll('.level-card.active'));
+    if (activeCards.length > 0) {
+      const gridCenter = grid.getBoundingClientRect().left + grid.offsetWidth / 2;
+      let closestCard = activeCards[0];
+      let minDiff = Infinity;
+      activeCards.forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const cardCenter = rect.left + rect.width / 2;
+        const diff = Math.abs(cardCenter - gridCenter);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestCard = card;
+        }
+      });
+
+      const currentId = parseInt(closestCard.id.replace('level-card-', ''), 10);
+      const targetId = direction === 'next' ? currentId + 1 : currentId - 1;
+      if (targetId >= 1 && targetId <= this.maxLevelsGame) {
+        this.scrollToLevel(targetId);
+      }
+    }
+  },
+
+  scrollToLevel(id) {
+    const targetCard = document.getElementById(`level-card-${id}`);
+    if (targetCard) {
+      targetCard.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      });
+    }
   },
 
   scrollToLatestLevel() {
