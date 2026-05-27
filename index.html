@@ -164,6 +164,30 @@
       <img id="jumpscare-img" src="" alt="" />
     </div>
 
+    <!-- Layar Monolog Naratif (Story Screen) -->
+    <div id="screen-story" class="hidden">
+      <div id="story-box">
+        <h2 id="story-title">LEVEL 1: RUANG GELAP</h2>
+        <div id="story-text-container">
+          <p id="story-text"></p>
+        </div>
+        <div id="story-actions">
+          <span id="story-skip-tip">Klik / tekan SPACE untuk mempercepat...</span>
+          <button id="btn-story-next">LANJUT</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Popup Serpihan Memori (Memory Popup) -->
+    <div id="popup-memory" class="hidden">
+      <div id="memory-box">
+        <div class="memory-glow"></div>
+        <h3 id="memory-title">SHARD MEMORI TERUNGKAP</h3>
+        <p id="memory-text"></p>
+        <button id="btn-memory-close">INGAT KEMBALI</button>
+      </div>
+    </div>
+
     <!-- Layar game over -->
     <div id="screen-gameover" class="hidden">
       <h2>GAME OVER</h2>
@@ -195,6 +219,7 @@
   <script src="src/enemy.js"></script>
   <script src="src/jumpscare.js"></script>
   <script src="src/audio.js"></script>
+  <script src="src/story.js"></script>
   <script src="src/ui.js"></script>
   <script src="src/game.js"></script>
 

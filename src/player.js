@@ -19,7 +19,18 @@ const Player = {
 
     this.x = nx;
     this.y = ny;
-    return Maze.getTile(nx, ny);
+
+    const tile = Maze.getTile(nx, ny);
+    if (tile === TILE.SHARD) {
+      // Ubah ubin menjadi lantai biasa agar tidak bisa diambil lagi
+      Maze.data.map[ny][nx] = TILE.FLOOR;
+      // Triger pengumpulan shard di logika utama game
+      if (typeof Game !== 'undefined' && Game.collectShard) {
+        Game.collectShard(nx, ny);
+      }
+    }
+
+    return tile;
   },
 
   render(ctx, cellSize) {

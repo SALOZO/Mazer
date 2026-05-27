@@ -5,6 +5,7 @@ const TILE = {
   EXIT_REAL:  2,
   EXIT_FAKE:  3,
   ENEMY_SPAWN:4,
+  SHARD:      5, // ← Tipe baru: serpihan memori
 };
 
 // Warna tiap tile (saat terang penuh)
@@ -14,6 +15,7 @@ const TILE_COLOR = {
   [TILE.EXIT_REAL]:   '#1a4a1a',
   [TILE.EXIT_FAKE]:   '#4a3a00',
   [TILE.ENEMY_SPAWN]: '#2a2a2a',
+  [TILE.SHARD]:       '#3a3a3a', // Latar belakang sama dengan lantai
 };
 
 // Warna tanda pintu (ikon kecil di tengah tile)
@@ -61,6 +63,26 @@ const Maze = {
         // Gambar tile dengan brightness
         ctx.fillStyle = applyBrightness(baseColor, brightness);
         ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+
+        // Gambar serpihan memori (floating glowing cyan sphere)
+        if (tile === TILE.SHARD) {
+          const cx = col * cellSize + cellSize / 2;
+          const cy = row * cellSize + cellSize / 2;
+          // Pulse effect based on tick
+          const pulse = Math.sin((Game.tick ?? 0) * 0.08) * 1.5 + 4;
+          
+          // Outer soft glow (transparan)
+          ctx.beginPath();
+          ctx.arc(cx, cy, pulse + 3, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(0, 200, 255, ${brightness * 0.25})`;
+          ctx.fill();
+
+          // Inner solid glowing dot
+          ctx.beginPath();
+          ctx.arc(cx, cy, pulse, 0, Math.PI * 2);
+          ctx.fillStyle = applyBrightness('#00c8ff', brightness * 0.95);
+          ctx.fill();
+        }
 
         // Gambar ikon pintu kalau tile adalah exit
         if (tile === TILE.EXIT_REAL || tile === TILE.EXIT_FAKE) {

@@ -31,7 +31,7 @@ const Game = {
   },
 
   resizeCanvas() {
-    if (!this.currentLevel || (this.state !== 'playing' && this.state !== 'jumpscare')) return;
+    if (!this.currentLevel || (this.state !== 'playing' && this.state !== 'jumpscare' && this.state !== 'paused')) return;
 
     const { map, cellSize } = this.currentLevel;
     const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
@@ -57,26 +57,54 @@ const Game = {
 
   startLevel(level) {
     this.currentLevel = level;
-    this.lives        = level.lives;
-    this.state        = 'playing';
-    this.tick         = 0;
-    this.moveTimer    = 0;
-    this.timeLeft     = level.timeLimit ?? 120;
-    this.lastSecondTick = 0;
+    
+    // Scan serpihan memori di map level ini
+    this.currentLevelShards = [];
+    const map = level.map;
+    for (let r = 0; r < map.length; r++) {
+      for (let c = 0; c < map[r].length; c++) {
+        if (map[r][c] === TILE.SHARD) {
+          this.currentLevelShards.push({ x: c, y: r, collected: false });
+        }
+      }
+    }
 
-    this.resizeCanvas();
-    // Jalankan ulang resizeCanvas dengan sedikit delay untuk memastikan layout browser mobile sudah stabil setelah transisi screen
-    setTimeout(() => this.resizeCanvas(), 50);
+    // Set state ke 'story' agar game loop tidak berjalan selama monolog berjalan
+    this.state = 'story';
 
-    Maze.load(level);
-    Player.init(level.playerStart.x, level.playerStart.y);
-    EnemyManager.init(level.map);
-    UI.updateLives(this.lives);
-    UI.updateLevel(level.id);
-    UI.updateTimer(this.timeLeft);
+    // Tampilkan monolog cerita pembuka level
+    UI.showStory(level.id, () => {
+      UI.showScreen('screen-game');
+      this.lives        = level.lives;
+      this.state        = 'playing';
+      this.tick         = 0;
+      this.moveTimer    = 0;
+      this.timeLeft     = level.timeLimit ?? 120;
+      this.lastSecondTick = 0;
 
-    this.eyeShown = false;
-    if (this.eyeTimer) clearTimeout(this.eyeTimer);
+      this.resizeCanvas();
+      // Jalankan ulang resizeCanvas dengan sedikit delay untuk memastikan layout browser mobile sudah stabil setelah transisi screen
+      setTimeout(() => this.resizeCanvas(), 50);
+
+      Maze.load(level);
+      Player.init(level.playerStart.x, level.playerStart.y);
+      EnemyManager.init(level.map);
+      UI.updateLives(this.lives);
+      UI.updateLevel(level.id);
+      UI.updateTimer(this.timeLeft);
+
+      this.eyeShown = false;
+      if (this.eyeTimer) clearTimeout(this.eyeTimer);
+    });
+  },
+
+  collectShard(x, y) {
+    if (!this.currentLevelShards) return;
+    const shardIndex = this.currentLevelShards.findIndex(s => s.x === x && s.y === y);
+    if (shardIndex !== -1 && !this.currentLevelShards[shardIndex].collected) {
+      this.currentLevelShards[shardIndex].collected = true;
+      UI.showMemoryPopup(this.currentLevel.id, shardIndex);
+    }
   },
 
   respawn() {
@@ -115,7 +143,7 @@ const Game = {
       if (this.timeLeft <= 0) {
         this.timeLeft = 0;
         this.lives = 0; // paksa lives 0 supaya langsung game over
-        this.triggerJumpscare('Waktu habis!');
+        this.triggerJumpscare('timeout');
         return;
       }
     }
@@ -135,7 +163,7 @@ const Game = {
           return;
         }
         if (tile === TILE.EXIT_FAKE) {
-          this.triggerJumpscare('Itu bukan jalan keluar!');
+          this.triggerJumpscare('fake_exit');
           return;
         }
       }
@@ -144,22 +172,36 @@ const Game = {
     EnemyManager.update();
 
     if (EnemyManager.checkCollision(Player.x, Player.y)) {
-      this.triggerJumpscare('Kamu tertangkap!');
+      this.triggerJumpscare('caught');
     }
   },
 
-  triggerJumpscare(reason) {
+  triggerJumpscare(reasonType) {
     if (this.state === 'jumpscare') return; // cegah double trigger
     this.state = 'jumpscare';
     this.lives--;
     UI.updateLives(this.lives);
     Audio.stop('footstep');
     Audio.play('jumpscare');
+
+    // Pilih teks jumpscare bertema medis/trauma dari STORY
+    const traumaText = STORY.jumpscares[Math.floor(Math.random() * STORY.jumpscares.length)];
+
+    // Tentukan pesan game over yang sesuai dengan konteks
+    let gameOverMsg;
+    if (reasonType === 'timeout') {
+      gameOverMsg = 'Kesadaran Clara memudar sepenuhnya... detak jantungnya berhenti.';
+    } else if (reasonType === 'fake_exit') {
+      gameOverMsg = 'Kejutan listrik defibrillator menyentak tubuh Clara, namun gagal membawanya kembali...';
+    } else {
+      gameOverMsg = 'Bayangan gelap menyelimuti Clara. Resusitasi jantung gagal total...';
+    }
+
     const self = this;
-    Jumpscare.show(reason, () => {
+    Jumpscare.show(traumaText, () => {
       if (self.lives <= 0) {
         self.state = 'gameover';
-        UI.showGameOver(reason);
+        UI.showGameOver(gameOverMsg);
       } else {
         self.respawn();
       }
@@ -188,7 +230,7 @@ const Game = {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    if (this.state === 'playing' || this.state === 'jumpscare') {
+    if (this.state === 'playing' || this.state === 'jumpscare' || this.state === 'paused') {
       const brightness = Lighting.compute(
         Player.x, Player.y,
         currentLevel.map,
@@ -214,9 +256,9 @@ const Game = {
       Progress.unlockNext(this.currentLevel.id);
       UI.showWin(this.currentLevel.timeLimit - this.timeLeft);
     } else if (tile === TILE.EXIT_FAKE) {
-      this.triggerJumpscare('Itu bukan jalan keluar!');
+      this.triggerJumpscare('fake_exit');
     } else if (EnemyManager.checkCollision(Player.x, Player.y)) {
-      this.triggerJumpscare('Kamu tertangkap!');
+      this.triggerJumpscare('caught');
     }
   },
 };

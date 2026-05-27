@@ -108,7 +108,6 @@ const UI = {
         }
 
         Audio.stop('menu');
-        this.showScreen('screen-game');
         this.game.startLevel(Progress.getLevel(id));
       };
     }
@@ -128,17 +127,17 @@ const UI = {
 
   showScreen(id) {
     window.scrollTo(0, 0);
-    ['screen-menu','screen-game','screen-gameover','screen-win','screen-levels'].forEach(s => {
+    ['screen-menu','screen-game','screen-gameover','screen-win','screen-levels','screen-story'].forEach(s => {
       document.getElementById(s).classList.add('hidden');
     });
     document.getElementById(id).classList.remove('hidden');
 
     const btnInfo = document.getElementById('btn-info');
-      if (id === 'screen-game') {
-        btnInfo.classList.add('hidden');
-      } else {
-        btnInfo.classList.remove('hidden');
-      }
+    if (id === 'screen-game' || id === 'screen-story') {
+      btnInfo.classList.add('hidden');
+    } else {
+      btnInfo.classList.remove('hidden');
+    }
   },
 
   startGame() {
@@ -353,15 +352,220 @@ const UI = {
     document.getElementById('gameover-msg').textContent = reason;
   },
 
-  // showWin(ticks) {
-  //   this.showScreen('screen-win');
-  //   const detik = Math.floor(ticks / 60);
-  //   document.getElementById('win-msg').textContent = `Waktu: ${detik} detik`;
-  // },
-
   showWin(detikDipakai) {
     Audio.stop('footstep');
-    this.showScreen('screen-win');
-    document.getElementById('win-msg').textContent = `Waktu: ${detikDipakai} detik`;
+    if (this.game.currentLevel && this.game.currentLevel.id === 5) {
+      this.showEndingScreen();
+    } else {
+      this.showScreen('screen-win');
+      document.getElementById('win-msg').textContent = `Waktu: ${detikDipakai} detik`;
+    }
+  },
+
+  // === SISTEM NARASI & STORY MONOLOG (TYPEWRITER) ===
+  storyInterval: null,
+  storyLines: [],
+  storyLineIndex: 0,
+  storyCharIndex: 0,
+  storyIsTyping: false,
+  storyCallback: null,
+  storySpaceHandler: null,
+
+  showStory(levelId, callback) {
+    const storyData = STORY.levels[levelId];
+    if (!storyData) {
+      callback();
+      return;
+    }
+
+    this.showScreen('screen-story');
+    document.getElementById('story-title').textContent = storyData.title;
+
+    const storyTextEl = document.getElementById('story-text');
+    storyTextEl.textContent = "";
+
+    this.storyLines = storyData.monologue;
+    this.storyLineIndex = 0;
+    this.storyCharIndex = 0;
+    this.storyCallback = callback;
+    this.storyIsTyping = false;
+
+    // Bersihkan listener lawas jika ada
+    if (this.storySpaceHandler) {
+      window.removeEventListener('keydown', this.storySpaceHandler);
+    }
+
+    // Mulai ketik baris pertama
+    this.typeNextLine();
+
+    // Setup tombol next
+    const nextBtn = document.getElementById('btn-story-next');
+    nextBtn.textContent = "LANJUT";
+    nextBtn.onclick = () => this.handleStoryNext();
+
+    // Event listener spacebar
+    const self = this;
+    const spaceHandler = (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        self.handleStoryNext();
+      }
+    };
+    window.addEventListener('keydown', spaceHandler);
+    this.storySpaceHandler = spaceHandler;
+  },
+
+  typeNextLine() {
+    if (this.storyInterval) clearInterval(this.storyInterval);
+
+    const storyTextEl = document.getElementById('story-text');
+    const currentLine = this.storyLines[this.storyLineIndex];
+    
+    storyTextEl.textContent = "";
+    this.storyCharIndex = 0;
+    this.storyIsTyping = true;
+
+    this.storyInterval = setInterval(() => {
+      storyTextEl.textContent += currentLine[this.storyCharIndex];
+      this.storyCharIndex++;
+
+      if (this.storyCharIndex >= currentLine.length) {
+        clearInterval(this.storyInterval);
+        this.storyIsTyping = false;
+
+        // Jika baris terakhir, ubah tombol menjadi "MULAI"
+        if (this.storyLineIndex >= this.storyLines.length - 1) {
+          document.getElementById('btn-story-next').textContent = "MULAI";
+        }
+      }
+    }, 25); // Ketukan cepat dan mantap (25ms/char)
+  },
+
+  handleStoryNext() {
+    if (this.storyIsTyping) {
+      // Lewati pengetikan: langsung tampilkan teks penuh
+      if (this.storyInterval) clearInterval(this.storyInterval);
+      const storyTextEl = document.getElementById('story-text');
+      storyTextEl.textContent = this.storyLines[this.storyLineIndex];
+      this.storyIsTyping = false;
+
+      if (this.storyLineIndex >= this.storyLines.length - 1) {
+        document.getElementById('btn-story-next').textContent = "MULAI";
+      }
+      return;
+    }
+
+    this.storyLineIndex++;
+    if (this.storyLineIndex < this.storyLines.length) {
+      this.typeNextLine();
+    } else {
+      // Selesai monolog, bersihkan dan mulai level
+      if (this.storyInterval) clearInterval(this.storyInterval);
+      if (this.storySpaceHandler) {
+        window.removeEventListener('keydown', this.storySpaceHandler);
+        this.storySpaceHandler = null;
+      }
+      if (this.storyCallback) this.storyCallback();
+    }
+  },
+
+  // === POP-UP DIARY / MEMORY SHARDS ===
+  showMemoryPopup(levelId, shardIndex) {
+    // Tangguhkan pergerakan game
+    this.game.state = 'paused';
+
+    const levelStory = STORY.levels[levelId];
+    const shardText = levelStory && levelStory.shards[shardIndex] 
+      ? levelStory.shards[shardIndex] 
+      : "Ingatan Clara samar-samar, tersaput kabut dingin...";
+
+    const popup = document.getElementById('popup-memory');
+    const textEl = document.getElementById('memory-text');
+    const closeBtn = document.getElementById('btn-memory-close');
+
+    textEl.textContent = shardText;
+    popup.classList.remove('hidden');
+
+    Audio.pauseBackground();
+
+    const self = this;
+    const closeMemory = () => {
+      popup.classList.add('hidden');
+      window.removeEventListener('keydown', keyHandler);
+      Audio.resumeBackground();
+      self.game.state = 'playing';
+    };
+
+    closeBtn.onclick = closeMemory;
+
+    // Izinkan Space, Enter, atau Escape untuk menutup
+    const keyHandler = (e) => {
+      if (e.key === ' ' || e.key === 'Enter' || e.key === 'Escape') {
+        e.preventDefault();
+        closeMemory();
+      }
+    };
+    window.addEventListener('keydown', keyHandler);
+  },
+
+  // === LAYAR ENDING TRAGIS (LEVEL 5 CLEAR) ===
+  showEndingScreen() {
+    this.showScreen('screen-story');
+    document.getElementById('story-title').textContent = STORY.ending.title;
+
+    const storyTextEl = document.getElementById('story-text');
+    storyTextEl.textContent = "";
+
+    this.storyLines = STORY.ending.lines;
+    this.storyLineIndex = 0;
+    this.storyCharIndex = 0;
+    this.storyIsTyping = false;
+
+    Audio.stop('menu');
+    Audio.play('menu'); // Putar melodi menu pelan
+
+    if (this.storySpaceHandler) {
+      window.removeEventListener('keydown', this.storySpaceHandler);
+    }
+
+    this.typeNextLine();
+
+    const nextBtn = document.getElementById('btn-story-next');
+    nextBtn.textContent = "LANJUT";
+
+    const self = this;
+    nextBtn.onclick = () => {
+      if (self.storyIsTyping) {
+        if (self.storyInterval) clearInterval(self.storyInterval);
+        storyTextEl.textContent = self.storyLines[self.storyLineIndex];
+        self.storyIsTyping = false;
+        if (self.storyLineIndex >= self.storyLines.length - 1) {
+          nextBtn.textContent = "MENU UTAMA";
+        }
+        return;
+      }
+
+      self.storyLineIndex++;
+      if (self.storyLineIndex < self.storyLines.length) {
+        self.typeNextLine();
+      } else {
+        if (self.storyInterval) clearInterval(self.storyInterval);
+        if (self.storySpaceHandler) {
+          window.removeEventListener('keydown', self.storySpaceHandler);
+          self.storySpaceHandler = null;
+        }
+        self.goMenu();
+      }
+    };
+
+    const spaceHandler = (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        nextBtn.click();
+      }
+    };
+    window.addEventListener('keydown', spaceHandler);
+    this.storySpaceHandler = spaceHandler;
   },
 };
+
