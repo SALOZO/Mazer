@@ -127,6 +127,7 @@ const UI = {
   },
 
   showScreen(id) {
+    window.scrollTo(0, 0);
     ['screen-menu','screen-game','screen-gameover','screen-win','screen-levels'].forEach(s => {
       document.getElementById(s).classList.add('hidden');
     });
@@ -283,12 +284,15 @@ const UI = {
   },
 
   scrollToLevel(id) {
+    const grid = document.getElementById('level-grid');
     const targetCard = document.getElementById(`level-card-${id}`);
-    if (targetCard) {
-      targetCard.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'center'
+    if (grid && targetCard) {
+      const gridRect = grid.getBoundingClientRect();
+      const cardRect = targetCard.getBoundingClientRect();
+      const scrollLeft = grid.scrollLeft + (cardRect.left - gridRect.left) - (grid.offsetWidth / 2) + (targetCard.offsetWidth / 2);
+      grid.scrollTo({
+        left: scrollLeft,
+        behavior: 'smooth'
       });
     }
   },
@@ -304,16 +308,9 @@ const UI = {
       }
     }
 
-    const targetCard = document.getElementById(`level-card-${latestId}`);
-    if (targetCard) {
-      setTimeout(() => {
-        targetCard.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center'
-        });
-      }, 100);
-    }
+    setTimeout(() => {
+      this.scrollToLevel(latestId);
+    }, 100);
   },
 
   goMenu() {
