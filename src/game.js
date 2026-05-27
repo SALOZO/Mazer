@@ -26,21 +26,17 @@ const Game = {
     UI.init(this);
 
     this.state = 'menu';
+    window.addEventListener('resize', () => this.resizeCanvas());
     requestAnimationFrame(() => this.loop());
   },
 
-  startLevel(level) {
-    this.currentLevel = level;
-    this.lives        = level.lives;
-    this.state        = 'playing';
-    this.tick         = 0;
-    this.moveTimer    = 0;
-    this.timeLeft     = level.timeLimit ?? 120;
-    this.lastSecondTick = 0;
+  resizeCanvas() {
+    if (!this.currentLevel || (this.state !== 'playing' && this.state !== 'jumpscare')) return;
 
-    const { map, cellSize } = level;
+    const { map, cellSize } = this.currentLevel;
+    const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
     const maxW = window.innerWidth  - 32;
-    const maxH = window.innerHeight - 140;
+    const maxH = window.innerHeight - (isMobile ? 180 : 140);
     const mapW = map[0].length * cellSize;
     const mapH = map.length    * cellSize;
     const scale = Math.min(1, maxW / mapW, maxH / mapH);
@@ -53,7 +49,24 @@ const Game = {
     this.canvas.style.height = finalH + 'px';
     this.scale = scale;
 
-    document.getElementById('hud').style.width = finalW + 'px';
+    const hud = document.getElementById('hud');
+    if (hud) {
+      hud.style.width = finalW + 'px';
+    }
+  },
+
+  startLevel(level) {
+    this.currentLevel = level;
+    this.lives        = level.lives;
+    this.state        = 'playing';
+    this.tick         = 0;
+    this.moveTimer    = 0;
+    this.timeLeft     = level.timeLimit ?? 120;
+    this.lastSecondTick = 0;
+
+    this.resizeCanvas();
+    // Jalankan ulang resizeCanvas dengan sedikit delay untuk memastikan layout browser mobile sudah stabil setelah transisi screen
+    setTimeout(() => this.resizeCanvas(), 50);
 
     Maze.load(level);
     Player.init(level.playerStart.x, level.playerStart.y);

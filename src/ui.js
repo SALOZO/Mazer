@@ -110,6 +110,7 @@ const UI = {
   },
 
   showScreen(id) {
+    window.scrollTo(0, 0);
     ['screen-menu','screen-game','screen-gameover','screen-win','screen-levels'].forEach(s => {
       document.getElementById(s).classList.add('hidden');
     });
@@ -223,6 +224,47 @@ const UI = {
     }, { passive: false });
   },
 
+  navigateLevelGrid(direction) {
+    const grid = document.getElementById('level-grid');
+    if (!grid) return;
+
+    const activeCards = Array.from(grid.querySelectorAll('.level-card.active'));
+    if (activeCards.length > 0) {
+      const gridCenter = grid.getBoundingClientRect().left + grid.offsetWidth / 2;
+      let closestCard = activeCards[0];
+      let minDiff = Infinity;
+      activeCards.forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const cardCenter = rect.left + rect.width / 2;
+        const diff = Math.abs(cardCenter - gridCenter);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestCard = card;
+        }
+      });
+
+      const currentId = parseInt(closestCard.id.replace('level-card-', ''), 10);
+      const targetId = direction === 'next' ? currentId + 1 : currentId - 1;
+      if (targetId >= 1 && targetId <= this.maxLevelsGame) {
+        this.scrollToLevel(targetId);
+      }
+    }
+  },
+
+  scrollToLevel(id) {
+    const grid = document.getElementById('level-grid');
+    const targetCard = document.getElementById(`level-card-${id}`);
+    if (grid && targetCard) {
+      const gridRect = grid.getBoundingClientRect();
+      const cardRect = targetCard.getBoundingClientRect();
+      const scrollLeft = grid.scrollLeft + (cardRect.left - gridRect.left) - (grid.offsetWidth / 2) + (targetCard.offsetWidth / 2);
+      grid.scrollTo({
+        left: scrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  },
+
   scrollToLatestLevel() {
     const levelGrid = document.getElementById('level-grid');
     if (!levelGrid) return;
@@ -234,16 +276,9 @@ const UI = {
       }
     }
 
-    const targetCard = document.getElementById(`level-card-${latestId}`);
-    if (targetCard) {
-      setTimeout(() => {
-        targetCard.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center'
-        });
-      }, 100);
-    }
+    setTimeout(() => {
+      this.scrollToLevel(latestId);
+    }, 100);
   },
 
   goMenu() {
