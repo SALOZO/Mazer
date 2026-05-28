@@ -22,6 +22,13 @@ const Jumpscare = {
   show(reason, callback) {
     const random = this.images[Math.floor(Math.random() * this.images.length)];
     this.img.src = random;
+
+    // Set teks trauma medis jumpscare
+    const textEl = document.getElementById('jumpscare-text');
+    if (textEl) {
+      textEl.textContent = reason;
+    }
+
     this.screen.classList.remove('hidden');
 
     // Flash merah di background
