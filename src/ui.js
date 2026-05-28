@@ -354,7 +354,7 @@ const UI = {
 
   showWin(detikDipakai) {
     Audio.stop('footstep');
-    if (this.game.currentLevel && this.game.currentLevel.id === 5) {
+    if (this.game.currentLevel && this.game.currentLevel.id === 7) {
       this.showEndingScreen();
     } else {
       this.showScreen('screen-win');

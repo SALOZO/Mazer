@@ -65,6 +65,34 @@ const STORY = {
         "Monitor detak jantung yang berbunyi sangat lambat. Di sebelah kananku, ranjang Lily kosong melompong. Ranjang Ayah dan Ibu pun kosong. Mereka semua... sudah pergi mendahuluiku.",
         "Suara dokter yang berbicara lirih di luar tirai ICU: 'Hanya gadis kecil ini yang selamat dari kecelakaan fatal itu. Namun kerusakan otaknya terlalu parah... dia mungkin tidak akan pernah bangun lagi.'"
       ]
+    },
+    6: {
+      title: "Level 6: Batas Ambang (The Lingering Voices)",
+      monologue: [
+        "Aku pikir... jika aku melangkah melewati pintu itu, semuanya akan berakhir. Namun jiwaku menolak menyerah.",
+        "Kudengar sayup-sayup suara bibi dan paman menangis di sisi ranjangku. Mereka memohon agar aku tidak pergi... 'Clara, kamulah satu-satunya yang tersisa dari keluarga kita... jangan tinggalkan kami...'",
+        "Koridor ini dipenuhi oleh gema tangisan mereka yang mencintaiku di dunia nyata. Rasa sakit di tubuhku begitu nyata, disengat kejutan defibrillator berulang kali.",
+        "Apakah bertahan sebagai raga tak berdaya adalah bentuk cinta, ataukah melepaskan adalah keberanian sejati?"
+      ],
+      shards: [
+        "Sebuah selimut wol rajutan merah yang hangat. Bibi membuatkannya untukku saat aku demam tinggi sewaktu kecil. Hangatnya masih terasa, seolah ia sedang mendekap tubuh komaku saat ini...",
+        "Coretan spidol di dinding koridor rumah sakit: 'Cepat sembuh Clara, kami menunggumu bermain lagi.' Itu tulisan tangan teman-teman sekolahku. Begitu banyak cinta yang menahanku di dunia ini..."
+      ]
+    },
+    7: {
+      title: "Level 7: Pusaran Acceptance (The Final Farewell)",
+      monologue: [
+        "Ini adalah pusaran terakhir. Detak jantungku melambat hingga hampir sunyi.",
+        "Kepingan memoriku bersatu kembali. Aku tahu apa yang harus kulakukan sekarang.",
+        "Aku tidak lagi takut pada bayangan merah itu. Mereka bukanlah monster... mereka adalah batas akhir kekuatan raga fana ini yang memudar.",
+        "Terima kasih telah berjuang begitu keras untuk menyelamatkanku, Dokter. Namun, keluargaku menungguku di sana.",
+        "Maafkan aku, Bibi, Paman, dan teman-temanku... Aku harus pergi menemui Ayah, Ibu, dan Lily.",
+        "Perjalanan panjang ini akhirnya selesai. Cahaya putih di depanku terasa begitu hangat..."
+      ],
+      shards: [
+        "Suara hangat Ibu yang berbisik lembut di telingaku: 'Anakku sayang, jika raga ini sudah terlalu lelah untuk bertahan, tidurlah... Ibu selalu ada di sini bersamamu...'",
+        "Sebuah senyuman damai di wajah Clara. Dia tidak lagi memegang senter kecilnya. Kegelapan ini tidak lagi menakutkan, melainkan menjadi jembatan menuju pelukan abadi keluarganya..."
+      ]
     }
   },
 
