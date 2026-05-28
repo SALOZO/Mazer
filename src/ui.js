@@ -1,6 +1,6 @@
 const UI = {
   game: null,
-  totalLevels: 3,
+  totalLevels: 7,
   maxLevelsGame: 20,
 
   init(gameRef) {
